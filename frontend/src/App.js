@@ -231,10 +231,21 @@ function App() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
+  const setMessageToCaSendMessage = (inputValue)=>{
+    const lastFewMessages = messages.map(item=>{
+      return {
+        "role": item.isUser?"user":"assistant",
+        "content": item.text}
+      }
+    );
+    lastFewMessages.push({"role":"user","content":inputValue})
+    lastFewMessages.unshift({"role":"system","content":`Bạn là một chuyên gia sale trong lĩnh vực mua bán xe hơi.
+        Nếu như câu hỏi là những thứ ngoài lĩnh vực này thì hãy trả lời là:
+        Xin lỗi bạn đây là câu hỏi nằm ngoài lĩnh vực của tôi. Xin hãy đặt lại câu hỏi.`});
+    return lastFewMessages;
+  }
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
-
     const userMessage = {
       id: Date.now(),
       text: inputValue,
@@ -245,10 +256,10 @@ function App() {
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
     setIsLoading(true);
-
+    const messageToSend = setMessageToCaSendMessage(inputValue);
     try {
       const response = await axios.post('http://127.0.0.1:3004/api/chat', {
-        message: inputValue,
+        promptMessageList: messageToSend,
         context: userContext
       });
 
@@ -260,6 +271,7 @@ function App() {
       };
 
       setMessages(prev => [...prev, botMessage]);
+      console.log("messages",messages)
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage = {

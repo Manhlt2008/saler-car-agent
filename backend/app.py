@@ -19,16 +19,14 @@ modelName = os.getenv("AZURE_DEPLOYMENT_NAME")
 def chat():
     try:
         data = request.get_json()
-        user_message = data.get('message', '')
+        prompt_message_list = data.get('promptMessageList', '')
 
-        if not user_message:
-            return jsonify({'error': 'Message is required'}), 400
+        # if not message_list:
+        #     return jsonify({'error': 'Message is required'}), 400
 
         response = client.chat.completions.create(
             model=modelName,
-            messages=[
-                {"role": "user", "content": user_message}
-            ]
+            messages=prompt_message_list
         )
 
         assistant_message = response.choices[0].message.content
