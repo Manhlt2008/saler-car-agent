@@ -233,16 +233,28 @@ function App() {
   const setPayloadToSendMessage = (inputValue)=>{
     let payLoad = {};
     if(inputValue.length!==0){
-      if(inputValue.indexOf("Tôi muốn tìm ảnh chi tiết về xe ")!==-1){
+      let lowerInputValue = inputValue.toLowerCase();
+      let indexFindImage = lowerInputValue.indexOf("ảnh") || lowerInputValue.indexOf("hình ảnh") || lowerInputValue.indexOf("hình");
+      if(indexFindImage!==-1){
         payLoad.isFunctionCall = true;
       }
     }
-    const lastFewMessages = messages.map(item=>{
+    let lastFewMessages = messages.map(item=>{
       return {
         "role": item.isUser?"user":"assistant",
         "content": item.text}
       }
     );
+    let idx = 1;
+    while (idx<lastFewMessages.length) {
+        const x=lastFewMessages[idx]
+          let rejectContent = x.content.toLowerCase();
+          let indexRejectContent =  rejectContent.indexOf("xin lỗi") || rejectContent.indexOf("đặt lại câu hỏi") || rejectContent.indexOf("ngoài phạm vi");
+
+          if(x.content && indexRejectContent!==-1){
+            lastFewMessages.splice(idx-1,2);
+          } else idx++
+    }
     lastFewMessages.push({"role":"user","content":inputValue})
     const roleSystem = {"role":"system","content":`Bạn là một chuyên gia sale trong lĩnh vực mua bán xe hơi.
         Nếu như câu hỏi là những thứ ngoài lĩnh vực này thì hãy trả lời là:
@@ -277,7 +289,6 @@ function App() {
       };
 
       setMessages(prev => [...prev, botMessage]);
-      debugger
       console.log("messages",messages)
     } catch (error) {
       console.error('Error sending message:', error);
