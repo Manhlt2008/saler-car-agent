@@ -221,7 +221,6 @@ function App() {
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [userContext, setUserContext] = useState({});
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -231,7 +230,13 @@ function App() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-  const setMessageToCaSendMessage = (inputValue)=>{
+  const setPayloadToSendMessage = (inputValue)=>{
+    let payLoad = {};
+    if(inputValue.length!==0){
+      if(inputValue.indexOf("Tôi muốn tìm ảnh chi tiết về xe ")!==-1){
+        payLoad.isFunctionCall = true;
+      }
+    }
     const lastFewMessages = messages.map(item=>{
       return {
         "role": item.isUser?"user":"assistant",
@@ -242,7 +247,8 @@ function App() {
     lastFewMessages.unshift({"role":"system","content":`Bạn là một chuyên gia sale trong lĩnh vực mua bán xe hơi.
         Nếu như câu hỏi là những thứ ngoài lĩnh vực này thì hãy trả lời là:
         Xin lỗi bạn đây là câu hỏi nằm ngoài lĩnh vực của tôi. Xin hãy đặt lại câu hỏi.`});
-    return lastFewMessages;
+    payLoad.promptMessageList = lastFewMessages.slice(-10);
+    return payLoad;
   }
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
@@ -256,21 +262,20 @@ function App() {
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
     setIsLoading(true);
-    const messageToSend = setMessageToCaSendMessage(inputValue);
+    const payload = setPayloadToSendMessage(inputValue);
     try {
-      const response = await axios.post('http://127.0.0.1:3004/api/chat', {
-        promptMessageList: messageToSend,
-        context: userContext
-      });
+      const response = await axios.post('http://127.0.0.1:3004/api/chat',payload);
 
       const botMessage = {
         id: Date.now() + 1,
         text: response.data.response,
+        images: response.data.images,
         isUser: false,
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, botMessage]);
+      debugger
       console.log("messages",messages)
     } catch (error) {
       console.error('Error sending message:', error);
@@ -297,7 +302,8 @@ function App() {
     "Tôi muốn mua xe dưới 1 tỷ",
     "Tôi cần xe 7 chỗ",
     "Tôi muốn xe SUV",
-    "Tôi cần xe tiết kiệm nhiên liệu"
+    "Tôi cần xe tiết kiệm nhiên liệu",
+    "Tôi muốn tìm ảnh chi tiết về xe "
   ];
 
   const handleQuickAction = (action) => {
@@ -321,12 +327,13 @@ function App() {
         </MessageAvatar>
         <div style={{ maxWidth: '70%' }}>
           <MessageContent isUser={isUser}>
-            {message.text.split('\n').map((line, index) => (
+            {message.text?.split('\n').map((line, index) => (
               <div key={index}>
                 {line}
                 {index < message.text.split('\n').length - 1 && <br />}
               </div>
             ))}
+            {message.images?  <img src={message.images} alt="car" style={{ maxWidth: '100%', marginTop: '10px', borderRadius: '8px' }} />:null}
           </MessageContent>
           <MessageTime isUser={isUser}>
             {formatTime(message.timestamp)}
