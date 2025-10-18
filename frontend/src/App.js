@@ -247,7 +247,7 @@ function App() {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('/api/chat', {
+      const response = await axios.post('http://127.0.0.1:3004/api/chat', {
         message: inputValue,
         context: userContext
       });
