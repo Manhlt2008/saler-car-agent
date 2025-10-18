@@ -244,10 +244,12 @@ function App() {
       }
     );
     lastFewMessages.push({"role":"user","content":inputValue})
-    lastFewMessages.unshift({"role":"system","content":`Bạn là một chuyên gia sale trong lĩnh vực mua bán xe hơi.
+    const roleSystem = {"role":"system","content":`Bạn là một chuyên gia sale trong lĩnh vực mua bán xe hơi.
         Nếu như câu hỏi là những thứ ngoài lĩnh vực này thì hãy trả lời là:
-        Xin lỗi bạn đây là câu hỏi nằm ngoài lĩnh vực của tôi. Xin hãy đặt lại câu hỏi.`});
+        Xin lỗi bạn đây là câu hỏi nằm ngoài lĩnh vực của tôi. Xin hãy đặt lại câu hỏi.`}
+    // lastFewMessages.unshift(roleSystem);
     payLoad.promptMessageList = lastFewMessages.slice(-10);
+    payLoad.promptMessageList.unshift(roleSystem);
     return payLoad;
   }
   const sendMessage = async () => {
