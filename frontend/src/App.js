@@ -278,7 +278,7 @@ function App() {
     setIsLoading(true);
     const payload = setPayloadToSendMessage(inputValue);
     try {
-      const response = await axios.post('http://127.0.0.1:3004/api/chat',payload);
+      const response = await axios.post('/api/chat',payload);
 
       const botMessage = {
         id: Date.now() + 1,

@@ -201,5 +201,5 @@ dmypy.json
 # Local development
 local/
 dev/
-
-
+llama-2-7b-chat.Q4_K_M.gguf
+config.py

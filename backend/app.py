@@ -138,4 +138,45 @@ def health():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3004, debug=True)
+    # Determine host and port from environment so the backend can bind to the
+    # same host the frontend uses (if desired).
+    # Precedence:
+    # 1. BACKEND_HOST and BACKEND_PORT
+    # 2. FRONTEND_HOST or FRONTEND_URL (parsed for hostname and optional port)
+    # 3. defaults: host='0.0.0.0', port=5000
+    backend_host = os.getenv('BACKEND_HOST')
+    backend_port = os.getenv('BACKEND_PORT')
+    frontend_host_env = os.getenv('FRONTEND_HOST') or os.getenv('FRONTEND_URL') or os.getenv('REACT_APP_FRONTEND_URL') or os.getenv('VITE_APP_BASE_URL')
+
+    host = '0.0.0.0'
+    port = 3004
+
+    # If BACKEND_PORT is set, prefer it
+    if backend_port:
+        try:
+            port = int(backend_port)
+        except Exception:
+            pass
+
+    # If BACKEND_HOST is explicitly set, use it. Otherwise try parsing frontend URL.
+    if backend_host:
+        host = backend_host
+    elif frontend_host_env:
+        # urlparse expects a scheme to populate hostname; if the value doesn't
+        # include one, prepend '//' so urlparse treats it as netloc.
+        from urllib.parse import urlparse
+        to_parse = frontend_host_env
+        if '://' not in to_parse and not to_parse.startswith('//'):
+            to_parse = '//' + to_parse
+        parsed = urlparse(to_parse)
+        if parsed.hostname:
+            host = parsed.hostname
+        # If frontend provided a port and BACKEND_PORT wasn't set, use it.
+        if parsed.port and not backend_port:
+            port = parsed.port
+
+    # FLASK_DEBUG env var can override debug mode (1/true/yes => True)
+    debug_env = os.getenv('FLASK_DEBUG')
+    debug = True if debug_env is None else str(debug_env).lower() in ('1', 'true', 'yes')
+
+    app.run(host=host, port=port, debug=debug)
