@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { FiSend, FiUser, FiMessageCircle, FiTruck, FiMapPin, FiMail } from 'react-icons/fi';
+import { FiSend, FiUser, FiMessageCircle, FiTruck } from 'react-icons/fi';
 import axios from 'axios';
 
 const AppContainer = styled.div`
@@ -194,21 +194,21 @@ const QuickActionButton = styled.button`
   }
 `;
 
-const CarComparison = styled.div`
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 15px;
-  margin: 10px 0;
-  border-left: 4px solid #667eea;
-`;
+// const CarComparison = styled.div`
+//   background: #f8f9fa;
+//   border-radius: 12px;
+//   padding: 15px;
+//   margin: 10px 0;
+//   border-left: 4px solid #667eea;
+// `;
 
-const ShowroomCard = styled.div`
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 15px;
-  margin: 10px 0;
-  border-left: 4px solid #28a745;
-`;
+// const ShowroomCard = styled.div`
+//   background: #f8f9fa;
+//   border-radius: 12px;
+//   padding: 15px;
+//   margin: 10px 0;
+//   border-left: 4px solid #28a745;
+// `;
 
 function App() {
   const [messages, setMessages] = useState([
