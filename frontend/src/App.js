@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { FiSend, FiUser, FiMessageCircle, FiTruck } from 'react-icons/fi';
+import { FiSend, FiUser, FiMessageCircle, FiTruck,FiSmile,FiFrown } from 'react-icons/fi';
 import axios from 'axios';
 
 const AppContainer = styled.div`
@@ -72,7 +72,7 @@ const MessageAvatar = styled.div`
 `;
 
 const MessageContent = styled.div`
-  max-width: 70%;
+  width: 100%;
   padding: 12px 16px;
   border-radius: 18px;
   background: ${props => props.isUser ? '#667eea' : '#f8f9fa'};
@@ -339,9 +339,9 @@ function App() {
           {isUser ? <FiUser size={20} /> : <FiMessageCircle size={20} />}
         </MessageAvatar>
         <div style={{ maxWidth: '70%' }}>
-          <MessageContent isUser={isUser}>
+          <MessageContent isUser={isUser} className='message-content'>
             {message.text?.split('\n').map((line, index) => (
-              <div key={index}>
+              <div key={index} style={{ width: '100%' }}>
                 {line}
                 {index < message.text.split('\n').length - 1 && <br />}
               </div>
@@ -349,7 +349,7 @@ function App() {
             {message.images?  <img src={message.images} alt="car" style={{ maxWidth: '100%', marginTop: '10px', borderRadius: '8px' }} />:null}
           </MessageContent>
           <MessageTime isUser={isUser}>
-            {formatTime(message.timestamp)}
+            {formatTime(message.timestamp)} {(!isUser && message.id>1)?<> <FiSmile size={18} style={{marginLeft:"5px"}}/> <span style={{marginRight:"5px"}}></span> <FiFrown size={18} /></>  :null}
           </MessageTime>
         </div>
       </Message>
