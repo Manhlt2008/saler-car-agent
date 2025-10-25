@@ -234,10 +234,17 @@ function App() {
     let payLoad = {};
     if(inputValue.length!==0){
       let lowerInputValue = inputValue.toLowerCase();
-      let indexFindImage = lowerInputValue.indexOf("ảnh") || lowerInputValue.indexOf("hình ảnh") || lowerInputValue.indexOf("hình");
-      if(indexFindImage!==-1){
+      let indexFindImage = lowerInputValue.includes("ảnh") || lowerInputValue.includes("hình ảnh") || lowerInputValue.includes("image") || lowerInputValue.includes("photo");
+      if(indexFindImage){
         payLoad.isFunctionCall = true;
       }
+
+      let indexDatabaseQuery = lowerInputValue.includes("gợi ý") || lowerInputValue.includes("đề xuất") || lowerInputValue.includes("tư vấn") || lowerInputValue.includes("recommendation");
+      if(indexDatabaseQuery){
+        payLoad.isDatabaseQuery = true;
+      }
+
+
     }
     let lastFewMessages = messages.map(item=>{
       return {
