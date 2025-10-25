@@ -45,7 +45,6 @@ def chat():
             function_call_response = function_call(prompt_message_list)
             if (function_call_response["response"]):
                 request_audio(function_call_response.response.message, function_call_response.response.message.id)
-
             return jsonify(function_call_response)
         elif isDatabaseQuery:
             print("Calling ChromaDB...")
