@@ -229,7 +229,7 @@ database_cars = [
         "transmission": "Tự động",
         "engine_power": "107 mã lực",
         "features": "Phanh ABS, cân bằng điện tử, camera lùi, điều hòa tự động",
-        "image_url": "https://example.com/toyota_vios.jpg",
+        "image_url": "https://imgcdn.zigwheels.ph/large/gallery/exterior/30/1943/toyota-vios-front-angle-low-view-945824.jpg",
         "created_at": "2025-10-25T10:00:00",
     },
     {
@@ -244,7 +244,7 @@ database_cars = [
         "transmission": "Tự động",
         "engine_power": "119 mã lực",
         "features": "Đèn LED, kiểm soát hành trình, cảm biến lùi, Apple CarPlay",
-        "image_url": "https://example.com/honda_city_rs.jpg",
+        "image_url": "https://hondaphuctho.vn/wp-content/uploads/2024/08/gioi-thieu-city-rs.jpg",
         "created_at": "2025-10-25T10:00:00",
     },
     {
@@ -259,7 +259,7 @@ database_cars = [
         "transmission": "Tự động",
         "engine_power": "154 mã lực",
         "features": "Ghế da, cửa sổ trời, hỗ trợ đổ đèo, phanh tay điện tử",
-        "image_url": "https://example.com/hyundai_tucson.jpg",
+        "image_url": "https://www.topgear.com/sites/default/files/cars-road-test/carousel/2015/07/Large%20Image_0.jpg?w=1784&h=1004",
         "created_at": "2025-10-25T10:00:00",
     },
     {
@@ -274,7 +274,7 @@ database_cars = [
         "transmission": "Tự động",
         "engine_power": "154 mã lực",
         "features": "Cảnh báo điểm mù, giữ làn đường, i-Stop, khởi động nút bấm",
-        "image_url": "https://example.com/mazda_cx5.jpg",
+        "image_url": "https://hips.hearstapps.com/hmg-prod/images/2025-mazda-cx-5-front-three-quarters-2-67a23acb1d56f.jpg?crop=0.693xw:0.673xh;0.307xw,0.310xh",
         "created_at": "2025-10-25T10:00:00",
     },
     {
@@ -289,7 +289,7 @@ database_cars = [
         "transmission": "Tự động",
         "engine_power": "228 mã lực",
         "features": "Hệ thống giải trí 10 inch, 6 túi khí, cảm biến va chạm quanh xe",
-        "image_url": "https://example.com/vinfast_lux_a20.jpg",
+        "image_url": "https://i1-vnexpress.vnecdn.net/2021/09/18/VinFastLuxA2020VnExpress3732854361601378665jpg-1631937165.jpg?w=750&h=450&q=100&dpr=1&fit=crop&s=yn4bLpjST_ByIUMMxbjrzA",
         "created_at": "2025-10-25T10:00:00",
     },
     {
@@ -304,7 +304,7 @@ database_cars = [
         "transmission": "Tự động",
         "engine_power": "83 mã lực",
         "features": "Đèn pha LED, cảm biến đỗ xe, ghế da thể thao, camera lùi",
-        "image_url": "https://example.com/kia_morning_gtline.jpg",
+        "image_url": "https://imgcdn.zigwheels.vn/large/gallery/exterior/12/83/kia-morning-front-angle-low-view-953115.jpg",
         "created_at": "2025-10-25T10:00:00",
     },
     {
@@ -319,7 +319,7 @@ database_cars = [
         "transmission": "Tự động",
         "engine_power": "210 mã lực",
         "features": "Dẫn động 4 bánh, khóa vi sai, cảnh báo lệch làn, kiểm soát đổ đèo",
-        "image_url": "https://example.com/ford_ranger_wildtrak.jpg",
+        "image_url": "https://media.drive.com.au/obj/tx_q:70,rs:auto:1600:900:1/driveau/upload/cms/uploads/HErmomORtWMsWUXHjGLA",
         "created_at": "2025-10-25T10:00:00",
     },
     {
@@ -334,7 +334,7 @@ database_cars = [
         "transmission": "Tự động",
         "engine_power": "104 mã lực",
         "features": "Cân bằng điện tử, hỗ trợ khởi hành ngang dốc, đèn LED ban ngày",
-        "image_url": "https://example.com/mitsubishi_xpander_cross.jpg",
+        "image_url": "https://img.autocarindia.com/ExtraImages/20191112043723_xpand2.jpg?w=700&c=1",
         "created_at": "2025-10-25T10:00:00",
     },
     {
@@ -349,7 +349,7 @@ database_cars = [
         "transmission": "Tự động",
         "engine_power": "283 mã lực",
         "features": "Tự lái Autopilot, màn hình 15 inch, không cần chìa khóa vật lý",
-        "image_url": "https://example.com/tesla_model3.jpg",
+        "image_url": "https://cimg1.ibsrv.net/ibimg/hgm/300x169-1/100/689/2019-tesla-model-3_100689077.jpg",
         "created_at": "2025-10-25T10:00:00",
     },
     {
@@ -364,7 +364,7 @@ database_cars = [
         "transmission": "Tự động",
         "engine_power": "138 mã lực",
         "features": "Động cơ hybrid tiết kiệm, ga tự động thích ứng, cảnh báo va chạm",
-        "image_url": "https://example.com/toyota_corolla_cross.jpg",
+        "image_url": "https://images.hgmsites.net/hug/2023-toyota-corolla-cross-hybrid_100880816_h.jpg",
         "created_at": "2025-10-25T10:00:00",
     },
 ]
