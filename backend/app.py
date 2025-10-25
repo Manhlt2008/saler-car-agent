@@ -1,6 +1,6 @@
 import json
 import os
-
+import config
 from audio import empty_audio, request_audio, audio_folder, get_file_name_by_id
 from duckduckgo_search import DDGS
 from flask import Flask, request, jsonify, send_from_directory
