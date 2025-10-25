@@ -1,13 +1,13 @@
-import os
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from openai import OpenAI
-import config
 import json
-import requests
+import os
+
+from audio import empty_audio, request_audio, audio_folder, get_file_name_by_id
 from duckduckgo_search import DDGS
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 from llama_cpp import Llama
 import chromadb
+from openai import OpenAI
 
 app = Flask(__name__)
 CORS(app)
@@ -20,7 +20,18 @@ client = OpenAI(
 modelName = os.getenv("DEPLOYMENT_NAME")
 
 
-@app.route("/api/chat", methods=["POST"])
+@app.route('/api/getaudio', methods=['POST'])
+def getaudio():
+    try:
+        data = request.get_json()
+        audio_id = data.get('id', '')
+        return send_from_directory(audio_folder, get_file_name_by_id(audio_id), mimetype="audio/wav")
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/chat', methods=['POST'])
 def chat():
     try:
         data = request.get_json()
@@ -31,6 +42,9 @@ def chat():
         isDatabaseQuery = data.get("isDatabaseQuery", False)
         if isFunctionCall:
             function_call_response = function_call(prompt_message_list)
+            if (function_call_response["response"]):
+                request_audio(function_call_response.response.message, function_call_response.response.message.id)
+
             return jsonify(function_call_response)
         elif isDatabaseQuery:
             print("Calling ChromaDB...")
@@ -45,7 +59,13 @@ def chat():
         )
 
         assistant_message = response.choices[0].message.content
-        return jsonify({"response": assistant_message})
+        request_audio(assistant_message, response.id)
+        return jsonify({
+            'response': {
+                "message": assistant_message,
+                "id": response.id
+            },
+        })
         # use llama model to re write the response , but it is too slow, so comment it out
         # model_file_path = 'llama-2-7b-chat.Q4_K_M.gguf'
         # llama_model = LlamaModel(model_file_path)
@@ -56,6 +76,7 @@ def chat():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 def function_call(messages):
@@ -95,23 +116,19 @@ def function_call(messages):
         # Add the function definition
         tools=function_definition,
         # Specify the function to be called for the response
-        tool_choice={"type": "function", "function": {"name": "get_car_details"}},
+        tool_choice={'type': 'function', 'function': {'name': 'get_car_details'}}
     )
     # return response.choices[0].message.tool_calls[0].function.arguments
 
-    queryImageObjectResponse = (
-        response.choices[0].message.tool_calls[0].function.arguments
-    )
+    queryImageObjectResponse = response.choices[0].message.tool_calls[0].function.arguments
     queryImageObject = json.loads(queryImageObjectResponse)
     try:
-        images = get_car_image(queryImageObject.get("query"))
-        return {"images": images, "response": ""}
+        images = get_car_image(queryImageObject.get('query'))
+        return {"images": images, "response": {"message": "",
+                                               "id": response.id}, }
     except Exception as e:
-        return {
-            "error": str(e),
-            "response": "",
-            "images": "https://vinfastvietnam.net.vn/uploads/data/3097/files/files/vf6/z5399795928209_497b18168c84c3c6bd3d779b53eac21d.jpg",
-        }
+        return {"error": str(e), "response": "",
+                "images": "https://vinfastvietnam.net.vn/uploads/data/3097/files/files/vf6/z5399795928209_497b18168c84c3c6bd3d779b53eac21d.jpg"}
 
 
 def get_car_image(query):
@@ -144,30 +161,23 @@ class LlamaModel:
         print("Rewriting response using LLaMA model...")
         try:
             # llama_model = LlamaModel(model_file_path)
-            prompt_text = (
-                "Rewrite the following text to be more engaging and informative: "
-                + text
-            )
+            prompt_text = "Rewrite the following text to be more engaging and informative: " + text
             output = self.llm.create_chat_completion(
                 messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a helpful assistant that rewrites text.",
-                    },
-                    {"role": "user", "content": prompt_text},
+                    {"role": "system", "content": "You are a helpful assistant that rewrites text."},
+                    {"role": "user", "content": prompt_text}
                 ],
                 # Specify output format to JSON
                 response_format={
                     "type": "json_object",
-                },
-            )
+                })
             # print(f"Raw output from LLaMA model: {output}")
-            return output["choices"][0]["message"]["content"]
+            return output['choices'][0]["message"]['content']
         except Exception as e:
             raise RuntimeError(f"Failed to generate text: {e}")
 
 
-@app.route("/health", methods=["GET"])
+@app.route('/health', methods=['GET'])
 def health():
     return jsonify({"status": "healthy"})
 
@@ -428,8 +438,9 @@ if __name__ == "__main__":
         )
     ).lower()
 
-    if "localhost" in frontend_values or "127.0.0.1" in frontend_values:
-        app.run(host="localhost", port=3000, debug=True)
+    empty_audio()
+    if 'localhost' in frontend_values or '127.0.0.1' in frontend_values:
+        app.run(host='localhost', port=3000, debug=True)
     else:
         # Do not explicitly set host/port so Flask uses defaults or values
         # provided through environment (FLASK_RUN_HOST/FLASK_RUN_PORT) or

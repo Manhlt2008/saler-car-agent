@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { FiSend, FiUser, FiMessageCircle, FiTruck,FiSmile,FiFrown } from 'react-icons/fi';
+import { FiSend, FiUser, FiMessageCircle, FiTruck, FiSmile, FiFrown } from 'react-icons/fi';
 import axios from 'axios';
+import { Volume2, VolumeOff } from "lucide-react"
+
 
 const AppContainer = styled.div`
   display: flex;
@@ -50,6 +52,12 @@ const ChatMessages = styled.div`
   display: flex;
   flex-direction: column;
   gap: 15px;
+  .row-inline-between{
+  display:inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap:20px;
+  }
 `;
 
 const Message = styled.div`
@@ -219,6 +227,8 @@ function App() {
       timestamp: new Date()
     }
   ]);
+  const [isPlay, setPlay] = useState(false)
+  const [src, setSrc] = useState(null)
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
@@ -230,9 +240,9 @@ function App() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-  const setPayloadToSendMessage = (inputValue)=>{
+  const setPayloadToSendMessage = (inputValue) => {
     let payLoad = {};
-    if(inputValue.length!==0){
+    if (inputValue.length !== 0) {
       let lowerInputValue = inputValue.toLowerCase();
       let indexFindImage = lowerInputValue.includes("ảnh") || lowerInputValue.includes("hình ảnh") || lowerInputValue.includes("image") || lowerInputValue.includes("photo");
       if(indexFindImage){
@@ -246,24 +256,26 @@ function App() {
 
 
     }
-    let lastFewMessages = messages.map(item=>{
+    let lastFewMessages = messages.map(item => {
       return {
-        "role": item.isUser?"user":"assistant",
-        "content": item.text}
+        "role": item.isUser ? "user" : "assistant",
+        "content": item.text
       }
+    }
     );
     let idx = 1;
-    while (idx<lastFewMessages.length) {
-        const x=lastFewMessages[idx]
-          let rejectContent = x.content.toLowerCase();
-          let indexRejectContent =  rejectContent.indexOf("xin lỗi") || rejectContent.indexOf("đặt lại câu hỏi") || rejectContent.indexOf("ngoài phạm vi");
+    while (idx < lastFewMessages.length) {
+      const x = lastFewMessages[idx]
+      let rejectContent = x.content.toLowerCase();
+      let indexRejectContent = rejectContent.indexOf("xin lỗi") || rejectContent.indexOf("đặt lại câu hỏi") || rejectContent.indexOf("ngoài phạm vi");
 
-          if(x.content && indexRejectContent!==-1){
-            lastFewMessages.splice(idx-1,2);
-          } else idx++
+      if (x.content && indexRejectContent !== -1) {
+        lastFewMessages.splice(idx - 1, 2);
+      } else idx++
     }
-    lastFewMessages.push({"role":"user","content":inputValue})
-    const roleSystem = {"role":"system","content":`Bạn là một chuyên gia sale trong lĩnh vực mua bán xe hơi tại thị trường Việt Nam.
+    lastFewMessages.push({ "role": "user", "content": inputValue })
+    const roleSystem = {
+      "role": "system", "content": `Bạn là một chuyên gia sale trong lĩnh vực mua bán xe hơi tại thị trường Việt Nam.
         Nếu như câu hỏi là những thứ ngoài lĩnh vực này thì hãy trả lời là:
         Xin lỗi bạn đây là câu hỏi nằm ngoài lĩnh vực của tôi. Xin hãy đặt lại câu hỏi.`}
     // lastFewMessages.unshift(roleSystem);
@@ -285,18 +297,19 @@ function App() {
     setIsLoading(true);
     const payload = setPayloadToSendMessage(inputValue);
     try {
-      const response = await axios.post('/api/chat',payload);
+      const response = await axios.post('/api/chat', payload);
 
       const botMessage = {
-        id: Date.now() + 1,
-        text: response.data.response,
+        id: response.data.response?.id || Date.now() + 1,
+        text: response.data.response?.message || "",
         images: response.data.images,
         isUser: false,
-        timestamp: new Date()
+        timestamp: new Date(),
+        audioId: response.data.response?.id
       };
-
+      response.data.response?.message && handlePlayAudio(botMessage.audioId)
       setMessages(prev => [...prev, botMessage]);
-      console.log("messages",messages)
+      console.log("messages", messages)
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage = {
@@ -331,15 +344,41 @@ function App() {
   };
 
   const formatTime = (timestamp) => {
-    return timestamp.toLocaleTimeString('vi-VN', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return timestamp.toLocaleTimeString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
+  const handlePlayAudio = async (id = "333") => {
+    if (isPlay) {
+      handleOffPlayAudio()
+      return
+    }
+    try {
+      setPlay(true);
+      const response = await axios.post('/api/getaudio', { id }, { responseType: "arraybuffer" });
+      const buf = await response?.data || [];
+      const ctx = new AudioContext();
+      const audio = await ctx.decodeAudioData(buf);
+      const src = ctx.createBufferSource();
+      src.buffer = audio;
+      src.connect(ctx.destination);
+      src.start(0);
+      setSrc(src)
+    } catch (_) {
+      //
+    }
+  }
+
+  const handleOffPlayAudio = () => {
+    src?.stop?.();
+    setPlay(false)
+  }
+
   const renderMessage = (message) => {
     const isUser = message.isUser;
-    
+
     return (
       <Message key={message.id} isUser={isUser}>
         <MessageAvatar isUser={isUser}>
@@ -353,11 +392,17 @@ function App() {
                 {index < message.text.split('\n').length - 1 && <br />}
               </div>
             ))}
-            {message.images?  <img src={message.images} alt="car" style={{ maxWidth: '100%', marginTop: '10px', borderRadius: '8px' }} />:null}
+            {message.images ? <img src={message.images} alt="car" style={{ maxWidth: '100%', marginTop: '10px', borderRadius: '8px' }} /> : null}
           </MessageContent>
-          <MessageTime isUser={isUser}>
-            {formatTime(message.timestamp)} {(!isUser && message.id>1)?<> <FiSmile size={18} style={{marginLeft:"5px"}}/> <span style={{marginRight:"5px"}}></span> <FiFrown size={18} /></>  :null}
-          </MessageTime>
+          <div className="row-inline-between w-100" style={{ width: '100%', marginTop: '20px' }}>
+            <MessageTime isUser={isUser}>
+              {formatTime(message.timestamp)} {(!isUser && message.id > 1) ? <> <FiSmile size={18} style={{ marginLeft: "5px" }} /> <span style={{ marginRight: "5px" }}></span> <FiFrown size={18} /></> : null}
+            </MessageTime>
+            {message.audioId && (isPlay ?
+              <Volume2 size={"20px"} onClick={() => handlePlayAudio(message?.audioId)} />
+              : <VolumeOff size={"20px"} onClick={() => handlePlayAudio(message?.audioId)} />)}
+          </div>
+
         </div>
       </Message>
     );
@@ -378,7 +423,7 @@ function App() {
 
         <ChatMessages>
           {messages.map(renderMessage)}
-          
+
           {isLoading && (
             <Message>
               <MessageAvatar>
@@ -393,7 +438,7 @@ function App() {
               </MessageContent>
             </Message>
           )}
-          
+
           {messages.length === 1 && (
             <QuickActions>
               {quickActions.map((action, index) => (
@@ -406,7 +451,7 @@ function App() {
               ))}
             </QuickActions>
           )}
-          
+
           <div ref={messagesEndRef} />
         </ChatMessages>
 
@@ -424,6 +469,7 @@ function App() {
           </SendButton>
         </ChatInput>
       </ChatContainer>
+      <audio style={{ visibility: "hidden" }} id="player" controls></audio>
     </AppContainer>
   );
 }
