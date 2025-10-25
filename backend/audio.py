@@ -5,8 +5,17 @@ from scipy.io.wavfile import write
 import numpy as np
 import os
 from transformers import VitsModel, AutoTokenizer
-audio_folder = "audio"
-folder = f"backend/{audio_folder}"
+
+isMac = False
+
+_audio_folder = "audio"
+audio_folder = _audio_folder
+folder = f"backend/{_audio_folder}"
+
+if(isMac is False):
+  audio_folder = folder
+
+
 os.makedirs(folder, exist_ok=True)
 
 model = VitsModel.from_pretrained("facebook/mms-tts-vie")

@@ -245,12 +245,12 @@ function App() {
     if (inputValue.length !== 0) {
       let lowerInputValue = inputValue.toLowerCase();
       let indexFindImage = lowerInputValue.includes("ảnh") || lowerInputValue.includes("hình ảnh") || lowerInputValue.includes("image") || lowerInputValue.includes("photo");
-      if(indexFindImage){
+      if (indexFindImage) {
         payLoad.isFunctionCall = true;
       }
 
       let indexDatabaseQuery = lowerInputValue.includes("gợi ý") || lowerInputValue.includes("đề xuất") || lowerInputValue.includes("tư vấn") || lowerInputValue.includes("recommendation");
-      if(indexDatabaseQuery){
+      if (indexDatabaseQuery) {
         payLoad.isDatabaseQuery = true;
       }
 
@@ -307,7 +307,7 @@ function App() {
         timestamp: new Date(),
         audioId: response.data.response?.id
       };
-      response.data.response?.message && handlePlayAudio(botMessage.audioId)
+      response.data.response?.message && handlePlayAudio(botMessage.audioId, true)
       setMessages(prev => [...prev, botMessage]);
       console.log("messages", messages)
     } catch (error) {
@@ -350,9 +350,9 @@ function App() {
     });
   };
 
-  const handlePlayAudio = async (id = "333") => {
-    if (isPlay) {
-      handleOffPlayAudio()
+  const handlePlayAudio = async (id, force) => {
+    handleOffPlayAudio()
+    if (isPlay && !force) {
       return
     }
     try {

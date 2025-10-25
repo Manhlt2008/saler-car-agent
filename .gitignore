@@ -40,6 +40,8 @@ venv.bak/
 *.sqlite3
 instance/
 
+/backend/audio
+
 # Flask
 instance/
 .webassets-cache
