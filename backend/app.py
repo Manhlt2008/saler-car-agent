@@ -8,6 +8,7 @@ from flask_cors import CORS
 from llama_cpp import Llama
 import chromadb
 from openai import OpenAI
+import uuid
 
 app = Flask(__name__)
 CORS(app)
@@ -50,7 +51,12 @@ def chat():
             print("Calling ChromaDB...")
             print("User Input:", prompt_message_list)
             llm_response = callChromaDB(prompt_message_list)
-            return jsonify({"response": llm_response})
+            id = uuid.uuid1()
+            request_audio(llm_response, id)
+            return jsonify({"response": {
+                "message":llm_response,
+                "id":id
+            }})
         # if not message_list:
         #     return jsonify({'error': 'Message is required'}), 400
 
