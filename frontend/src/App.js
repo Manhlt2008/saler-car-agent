@@ -267,7 +267,7 @@ function App() {
     while (idx < lastFewMessages.length) {
       const x = lastFewMessages[idx]
       let rejectContent = x.content.toLowerCase();
-      let indexRejectContent = rejectContent.indexOf("xin lỗi") || rejectContent.indexOf("đặt lại câu hỏi") || rejectContent.indexOf("ngoài phạm vi");
+      let indexRejectContent = rejectContent.indexOf("xin lỗi") ?? rejectContent.indexOf("đặt lại câu hỏi") ?? rejectContent.indexOf("ngoài phạm vi");
 
       if (x.content && indexRejectContent !== -1) {
         lastFewMessages.splice(idx - 1, 2);
@@ -469,7 +469,7 @@ function App() {
           </SendButton>
         </ChatInput>
       </ChatContainer>
-      <audio style={{ visibility: "hidden" }} id="player" controls></audio>
+      <audio style={{ visibility: "hidden" ,position:"absolute"}} id="player" controls></audio>
     </AppContainer>
   );
 }

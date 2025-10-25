@@ -1,7 +1,7 @@
 import json
 import os
 import config
-from audio import empty_audio, request_audio, audio_folder, get_file_name_by_id
+from audio import empty_audio, request_audio, folder, get_file_name_by_id
 from duckduckgo_search import DDGS
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -26,7 +26,7 @@ def getaudio():
     try:
         data = request.get_json()
         audio_id = data.get('id', '')
-        return send_from_directory(audio_folder, get_file_name_by_id(audio_id), mimetype="audio/wav")
+        return send_from_directory(folder, get_file_name_by_id(audio_id), mimetype="audio/wav")
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -61,7 +61,7 @@ def chat():
         #     return jsonify({'error': 'Message is required'}), 400
 
         response = client.chat.completions.create(
-            model=modelName, messages=prompt_message_list
+            model=modelName, messages=prompt_message_list,max_completion_tokens=500
         )
 
         assistant_message = response.choices[0].message.content
