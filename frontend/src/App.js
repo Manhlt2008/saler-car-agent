@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import {
   FiSend,
@@ -7,9 +7,12 @@ import {
   FiTruck,
   FiSmile,
   FiFrown,
+  FiServer,
+  FiVolume2,
+  FiVolumeX
 } from "react-icons/fi";
 import axios from "axios";
-import { Volume2, VolumeOff } from "lucide-react";
+import Markdown from 'react-markdown'
 
 const AppContainer = styled.div`
   display: flex;
@@ -420,14 +423,14 @@ function App() {
     return (
       <Message key={message.id} isUser={isUser}>
         <MessageAvatar isUser={isUser}>
-          {isUser ? <FiUser size={20} /> : <FiMessageCircle size={20} />}
+          {isUser ? <FiUser size={20} /> : <FiServer size={20} />}
         </MessageAvatar>
         <div style={{ maxWidth: "70%" }}>
           <MessageContent isUser={isUser} className="message-content">
             {message.text?.split("\n").map((line, index) => (
               <div key={index} style={{ width: "100%" }}>
-                {line}
-                {index < message.text.split("\n").length - 1 && <br />}
+                <Markdown>{line}</Markdown>
+                {/* {index < message.text.split("\n").length - 1 && <br />} */}
               </div>
             ))}
             {message.images ? (
@@ -459,13 +462,13 @@ function App() {
             </MessageTime>
             {message.audioId &&
               (isPlay ? (
-                <Volume2
-                  size={"20px"}
+                <FiVolume2
+                  size={18}
                   onClick={() => handlePlayAudio(message?.audioId)}
                 />
               ) : (
-                <VolumeOff
-                  size={"20px"}
+                <FiVolumeX
+                  size={18}
                   onClick={() => handlePlayAudio(message?.audioId)}
                 />
               ))}
