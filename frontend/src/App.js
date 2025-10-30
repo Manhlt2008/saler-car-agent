@@ -3,7 +3,6 @@ import styled from "styled-components";
 import {
   FiSend,
   FiUser,
-  FiMessageCircle,
   FiTruck,
   FiSmile,
   FiFrown,
@@ -13,6 +12,7 @@ import {
 } from "react-icons/fi";
 import axios from "axios";
 import Markdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const AppContainer = styled.div`
   display: flex;
@@ -242,7 +242,7 @@ function App() {
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "Xin chào! Tôi là AI agent tư vấn bán xe. Tôi có thể giúp bạn:\n• Tìm xe phù hợp với ngân sách và nhu cầu\n• So sánh các mẫu xe\n• Tìm showroom gần nhất\n• Đăng ký lái thử\n\nBạn có thể cho tôi biết ngân sách và yêu cầu của bạn không?",
+      text: "Xin chào! Tôi là AI agent tư vấn bán xe. Tôi có thể giúp bạn:\n\n• Tìm xe phù hợp với ngân sách và nhu cầu\n\n• So sánh các mẫu xe\n\n• Tìm showroom gần nhất\n\n• Đăng ký lái thử\n\nBạn có thể cho tôi biết ngân sách và yêu cầu của bạn không?",
       isUser: false,
       timestamp: new Date(),
     },
@@ -274,7 +274,7 @@ function App() {
         payLoad.isFunctionCall = true;
 
       const indexDatabaseQuery =
-        lowerInputValue.includes("gợi ý") ||
+        lowerInputValue.includes("tư vấn") ||
         lowerInputValue.includes("đề xuất")
       if (indexDatabaseQuery)
         payLoad.isDatabaseQuery = true;
@@ -282,11 +282,13 @@ function App() {
       const indexSimilarCarQuery =
         lowerInputValue.includes("tìm xe") ||
         lowerInputValue.includes("tương tự") ||
-        lowerInputValue.includes("tư vấn") ||
+        lowerInputValue.includes("gợi ý") ||
         lowerInputValue.includes("recommend");
       if (indexSimilarCarQuery)
         payLoad.isSimilarCarQuery = true;
 
+      if (lowerInputValue.includes("so sánh"))
+        inputValue += " trả lời dưới dạng bảng ví dụ như sau | Header 1 | Header 2 | Header 3 | | :------- | :------: | -------: | | Row 1 Col 1 | Row 1 Col 2 | Row 1 Col 3 | | Row 2 Col 1 | Row 2 Col 2 | Row 2 Col 3 |"
     }
     const lastFewMessages = messages.map((item) => {
       return {
@@ -427,12 +429,9 @@ function App() {
         </MessageAvatar>
         <div style={{ maxWidth: "70%" }}>
           <MessageContent isUser={isUser} className="message-content">
-            {message.text?.split("\n").map((line, index) => (
-              <div key={index} style={{ width: "100%" }}>
-                <Markdown>{line}</Markdown>
-                {/* {index < message.text.split("\n").length - 1 && <br />} */}
-              </div>
-            ))}
+            <Markdown remarkPlugins={[remarkGfm]}>
+              {message.text}
+            </Markdown>
             {message.images ? (
               <img
                 src={message.images}
@@ -497,7 +496,7 @@ function App() {
           {isLoading && (
             <Message>
               <MessageAvatar>
-                <FiMessageCircle size={20} />
+                <FiServer size={20} />
               </MessageAvatar>
               <MessageContent>
                 <LoadingDots>

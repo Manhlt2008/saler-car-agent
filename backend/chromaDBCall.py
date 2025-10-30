@@ -3,7 +3,6 @@ import chromadb
 from config import client, embedding_client
 from databaseCars import database_cars
 
-# use chromadb
 OPENAI_EMBEDDING_API_KEY = os.getenv("OPENAI_EMBEDDING_API_KEY")
 OPENAI_EMBEDDING_ENDPOINT = os.getenv("OPENAI_EMBEDDING_ENDPOINT")
 OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL")
@@ -55,7 +54,14 @@ for car in database_cars:
         embeddings=[embedding],
         documents=[car["features"]],
         ids=[car["id"]],
-        metadatas=[{"name": car["name"], "brand": car["brand"], "image": car["image_url"]}],
+        metadatas=[{"name": car["name"], 
+                    "brand": car["brand"], 
+                    "image": car["image_url"], 
+                    "segment": car["segment"], 
+                    "seats": car["seats"], 
+                    "transmission": car["transmission"] , 
+                    "fuel_type": car["fuel_type"] ,
+                    "engine_power": car["engine_power"] }],
     )
 
 
@@ -65,10 +71,15 @@ def build_context(results, n_context=3):
     context_str = ""
     for doc, meta in zip(docs, metas):
         context_str += (
-            f"Name: {meta['name']}\n"
-            f"Description: {doc}\n"
-            f"Brand: {meta['brand']}\n"
-            f"Image: {meta['image']}\n\n"
+            f"Tên: {meta['name']}\n"
+            f"Mô tả: {doc}\n"
+            f"Hãng: {meta['brand']}\n"
+            f"Loại: {meta['segment']}\n"
+            f"Số ghế: {meta['seats']}\n"
+            f"Nhiên liệu: {meta['fuel_type']}\n"
+            f"Hộp số: {meta['transmission']}\n"
+            f"Mã lực: {meta['engine_power']}\n"
+            f"Hình ảnh: {meta['image']}\n\n"
         )
     return context_str.strip()
 
@@ -77,8 +88,6 @@ def callChromaDB(user_input):
     userInput = user_input[-1]["content"]
     query_embedding = get_embedding(userInput)
     results = collection.query(query_embeddings=[query_embedding], n_results=3)
-    # Step 2: Build context for LLM
     context = build_context(results)
-    # Step 3: Get recommendation from LLM
     llm_output = ask_llm(context, user_input)
     return llm_output

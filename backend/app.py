@@ -45,11 +45,8 @@ def chat():
         elif isDatabaseQuery:
             llm_response = callChromaDB(prompt_message_list)
             id = uuid.uuid1()
-            request_audio(llm_response, id)
-            return jsonify({"response": {
-                "message":llm_response,
-                "id":id
-            }})
+            # request_audio(llm_response, id)
+            return jsonify({"response": { "message":llm_response, "id":id}})
         
         elif isSimilarCarQuery:
             llm_response = callPinecone(prompt_message_list)
@@ -67,7 +64,7 @@ def chat():
         )
 
         assistant_message = response.choices[0].message.content
-        request_audio(assistant_message, response.id)
+        # request_audio(assistant_message, response.id)
         return jsonify({
             'response': {
                 "message": assistant_message,
