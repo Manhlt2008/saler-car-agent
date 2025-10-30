@@ -5,12 +5,10 @@ from config import client
 
 import os
 import uuid
-import json
 from flask_cors import CORS
-from llama_cpp import Llama
-from duckduckgo_search import DDGS
 from similarCars import callPinecone
 from chromaDBCall import callChromaDB
+from functionCalling import function_call
 from flask import Flask, request, jsonify, send_from_directory
 from audio import empty_audio, request_audio, folder, get_file_name_by_id
 
@@ -33,17 +31,17 @@ def getaudio():
 def chat():
     try:
         data = request.get_json()
-
         prompt_message_list = data.get("promptMessageList", "")
-
         isFunctionCall = data.get("isFunctionCall", False)
         isDatabaseQuery = data.get("isDatabaseQuery", False)
         isSimilarCarQuery = data.get("isSimilarCarQuery", False)
+
         if isFunctionCall:
             function_call_response = function_call(prompt_message_list)
             if (function_call_response["response"]):
                 request_audio(function_call_response.response.message, function_call_response.response.message.id)
             return jsonify(function_call_response)
+        
         elif isDatabaseQuery:
             llm_response = callChromaDB(prompt_message_list)
             id = uuid.uuid1()
@@ -52,6 +50,7 @@ def chat():
                 "message":llm_response,
                 "id":id
             }})
+        
         elif isSimilarCarQuery:
             llm_response = callPinecone(prompt_message_list)
             id = uuid.uuid1()
@@ -85,106 +84,6 @@ def chat():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
-
-def function_call(messages):
-    function_definition = [
-        {
-            "type": "function",
-            "function": {
-                "name": "get_car_details",
-                "description": "Retrieve image url(s) for a specific car model. Call with {'query': 'make model year', 'imageCount': 1}.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "query": {
-                            "type": "string",
-                            "description": "Search query (car make/model) to find a real image",
-                        },
-                        "imageCount": {
-                            "type": "integer",
-                            "description": "Number of images to return",
-                            "default": 1,
-                        },
-                    },
-                    "required": ["query"],
-                },
-                "result": {
-                    "type": "object",
-                    "properties": {
-                        "images": {"type": "array", "items": {"type": "string"}}
-                    },
-                },
-            },
-        }
-    ]
-    response = client.chat.completions.create(
-        model=modelName,
-        messages=messages,
-        # Add the function definition
-        tools=function_definition,
-        # Specify the function to be called for the response
-        tool_choice={'type': 'function', 'function': {'name': 'get_car_details'}}
-    )
-    # return response.choices[0].message.tool_calls[0].function.arguments
-
-    queryImageObjectResponse = response.choices[0].message.tool_calls[0].function.arguments
-    queryImageObject = json.loads(queryImageObjectResponse)
-    try:
-        images = get_car_image(queryImageObject.get('query'))
-        return {"images": images, "response": {"message": "",
-                                               "id": response.id}, }
-    except Exception as e:
-        return {"error": str(e), "response": "",
-                "images": "https://vinfastvietnam.net.vn/uploads/data/3097/files/files/vf6/z5399795928209_497b18168c84c3c6bd3d779b53eac21d.jpg"}
-
-
-def get_car_image(query):
-    """Get the first image URL for the given search text using DuckDuckGo."""
-    with DDGS() as ddgs:
-        results = ddgs.images(query, max_results=1)
-        for r in results:
-            return r["image"]  # The direct image URL
-    return None
-
-
-# function   re_write_response use llama model to re write the response
-class LlamaModel:
-    def __init__(self, model_path, n_ctx=512):
-        """
-        Initializes the Llama model.
-        Args:
-        model_path (str): The path to the LLaMA model file.
-        n_ctx (int): The context size.
-        """
-        if not os.path.exists(model_path):
-            raise FileNotFoundError(f"Model file not found at: {model_path}")
-        try:
-            self.llm = Llama(model_path=model_path, n_ctx=n_ctx)
-            print(f"LLaMA model loaded successfully from {model_path}")
-        except Exception as e:
-            raise RuntimeError(f"Failed to load LLaMA model: {e}")
-
-    def re_write_response(self, text):
-        print("Rewriting response using LLaMA model...")
-        try:
-            # llama_model = LlamaModel(model_file_path)
-            prompt_text = "Rewrite the following text to be more engaging and informative: " + text
-            output = self.llm.create_chat_completion(
-                messages=[
-                    {"role": "system", "content": "You are a helpful assistant that rewrites text."},
-                    {"role": "user", "content": prompt_text}
-                ],
-                # Specify output format to JSON
-                response_format={
-                    "type": "json_object",
-                })
-            # print(f"Raw output from LLaMA model: {output}")
-            return output['choices'][0]["message"]['content']
-        except Exception as e:
-            raise RuntimeError(f"Failed to generate text: {e}")
-
 
 @app.route('/health', methods=['GET'])
 def health():
