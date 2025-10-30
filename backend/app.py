@@ -1,25 +1,24 @@
-import json
+from config import initKey, initClients
+initKey()
+initClients()
+from config import client, embedding_client
+
 import os
-import config
-from audio import empty_audio, request_audio, folder, get_file_name_by_id
-from duckduckgo_search import DDGS
-from flask import Flask, request, jsonify, send_from_directory
-from flask_cors import CORS
-from llama_cpp import Llama
+import uuid
+import json
 import chromadb
 from openai import OpenAI
-import uuid
+from flask_cors import CORS
+from llama_cpp import Llama
+from duckduckgo_search import DDGS
+from similarCars import callPinecone
+from databaseCars import database_cars
+from flask import Flask, request, jsonify, send_from_directory
+from audio import empty_audio, request_audio, folder, get_file_name_by_id
 
 app = Flask(__name__)
 CORS(app)
-
-client = OpenAI(
-    base_url=os.getenv("OPENAI_ENDPOINT"),
-    api_key=os.getenv("OPENAI_API_KEY"),
-)
-
 modelName = os.getenv("DEPLOYMENT_NAME")
-
 
 @app.route('/api/getaudio', methods=['POST'])
 def getaudio():
@@ -41,17 +40,24 @@ def chat():
 
         isFunctionCall = data.get("isFunctionCall", False)
         isDatabaseQuery = data.get("isDatabaseQuery", False)
+        isSimilarCarQuery = data.get("isSimilarCarQuery", False)
         if isFunctionCall:
             function_call_response = function_call(prompt_message_list)
             if (function_call_response["response"]):
                 request_audio(function_call_response.response.message, function_call_response.response.message.id)
             return jsonify(function_call_response)
         elif isDatabaseQuery:
-            print("Calling ChromaDB...")
-            print("User Input:", prompt_message_list)
             llm_response = callChromaDB(prompt_message_list)
             id = uuid.uuid1()
             request_audio(llm_response, id)
+            return jsonify({"response": {
+                "message":llm_response,
+                "id":id
+            }})
+        elif isSimilarCarQuery:
+            llm_response = callPinecone(prompt_message_list)
+            id = uuid.uuid1()
+            # request_audio(llm_response, id)
             return jsonify({"response": {
                 "message":llm_response,
                 "id":id
@@ -190,23 +196,16 @@ def health():
 # use chromadb
 OPENAI_EMBEDDING_API_KEY = os.getenv("OPENAI_EMBEDDING_API_KEY")
 OPENAI_EMBEDDING_ENDPOINT = os.getenv("OPENAI_EMBEDDING_ENDPOINT")
-OPENAI_EMBED_MODEL = os.getenv("OPENAI_EMBED_MODEL")
+OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL")
 # ---- LLM CONFIG ----
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_ENDPOINT = os.getenv("OPENAI_ENDPOINT")
 DEPLOYMENT_NAME = os.getenv("DEPLOYMENT_NAME")
-# ---- CLIENTS ----
-embedding_client = OpenAI(
-    base_url=os.getenv("OPENAI_ENDPOINT"),
-    api_key=os.getenv("OPENAI_EMBEDDING_API_KEY"),
-)
-
 
 # ---- GET EMBEDDING ----
 def get_embedding(text):
-    response = embedding_client.embeddings.create(input=text, model=OPENAI_EMBED_MODEL)
+    response = embedding_client.embeddings.create(input=text, model=OPENAI_EMBEDDING_MODEL)
     return response.data[0].embedding
-
 
 # ---- CALL LLM ----
 def ask_llm(context, user_input):
@@ -230,159 +229,6 @@ def ask_llm(context, user_input):
 chroma_client = chromadb.Client()
 collection = chroma_client.create_collection(name="database_cars")
 
-# --------- Add Sample data cars ---------
-database_cars = [
-    {
-        "id": "1",
-        "name": "Toyota Vios 1.5G CVT",
-        "brand": "Toyota",
-        "price_min": 520000000,
-        "price_max": 620000000,
-        "segment": "Sedan",
-        "seats": 5,
-        "fuel_type": "Xăng",
-        "transmission": "Tự động",
-        "engine_power": "107 mã lực",
-        "features": "Phanh ABS, cân bằng điện tử, camera lùi, điều hòa tự động",
-        "image_url": "https://imgcdn.zigwheels.ph/large/gallery/exterior/30/1943/toyota-vios-front-angle-low-view-945824.jpg",
-        "created_at": "2025-10-25T10:00:00",
-    },
-    {
-        "id": "2",
-        "name": "Honda City RS",
-        "brand": "Honda",
-        "price_min": 580000000,
-        "price_max": 680000000,
-        "segment": "Sedan",
-        "seats": 5,
-        "fuel_type": "Xăng",
-        "transmission": "Tự động",
-        "engine_power": "119 mã lực",
-        "features": "Đèn LED, kiểm soát hành trình, cảm biến lùi, Apple CarPlay",
-        "image_url": "https://hondaphuctho.vn/wp-content/uploads/2024/08/gioi-thieu-city-rs.jpg",
-        "created_at": "2025-10-25T10:00:00",
-    },
-    {
-        "id": "3",
-        "name": "Hyundai Tucson 2.0 Premium",
-        "brand": "Hyundai",
-        "price_min": 900000000,
-        "price_max": 1000000000,
-        "segment": "SUV",
-        "seats": 5,
-        "fuel_type": "Xăng",
-        "transmission": "Tự động",
-        "engine_power": "154 mã lực",
-        "features": "Ghế da, cửa sổ trời, hỗ trợ đổ đèo, phanh tay điện tử",
-        "image_url": "https://www.topgear.com/sites/default/files/cars-road-test/carousel/2015/07/Large%20Image_0.jpg?w=1784&h=1004",
-        "created_at": "2025-10-25T10:00:00",
-    },
-    {
-        "id": "4",
-        "name": "Mazda CX-5 2.0 Luxury",
-        "brand": "Mazda",
-        "price_min": 850000000,
-        "price_max": 990000000,
-        "segment": "SUV",
-        "seats": 5,
-        "fuel_type": "Xăng",
-        "transmission": "Tự động",
-        "engine_power": "154 mã lực",
-        "features": "Cảnh báo điểm mù, giữ làn đường, i-Stop, khởi động nút bấm",
-        "image_url": "https://hips.hearstapps.com/hmg-prod/images/2025-mazda-cx-5-front-three-quarters-2-67a23acb1d56f.jpg?crop=0.693xw:0.673xh;0.307xw,0.310xh",
-        "created_at": "2025-10-25T10:00:00",
-    },
-    {
-        "id": "5",
-        "name": "VinFast Lux A2.0",
-        "brand": "VinFast",
-        "price_min": 900000000,
-        "price_max": 1100000000,
-        "segment": "Sedan",
-        "seats": 5,
-        "fuel_type": "Xăng",
-        "transmission": "Tự động",
-        "engine_power": "228 mã lực",
-        "features": "Hệ thống giải trí 10 inch, 6 túi khí, cảm biến va chạm quanh xe",
-        "image_url": "https://i1-vnexpress.vnecdn.net/2021/09/18/VinFastLuxA2020VnExpress3732854361601378665jpg-1631937165.jpg?w=750&h=450&q=100&dpr=1&fit=crop&s=yn4bLpjST_ByIUMMxbjrzA",
-        "created_at": "2025-10-25T10:00:00",
-    },
-    {
-        "id": "6",
-        "name": "Kia Morning GT-Line",
-        "brand": "Kia",
-        "price_min": 450000000,
-        "price_max": 520000000,
-        "segment": "Hatchback",
-        "seats": 5,
-        "fuel_type": "Xăng",
-        "transmission": "Tự động",
-        "engine_power": "83 mã lực",
-        "features": "Đèn pha LED, cảm biến đỗ xe, ghế da thể thao, camera lùi",
-        "image_url": "https://imgcdn.zigwheels.vn/large/gallery/exterior/12/83/kia-morning-front-angle-low-view-953115.jpg",
-        "created_at": "2025-10-25T10:00:00",
-    },
-    {
-        "id": "7",
-        "name": "Ford Ranger Wildtrak 2.0 Bi-Turbo",
-        "brand": "Ford",
-        "price_min": 1100000000,
-        "price_max": 1300000000,
-        "segment": "Bán tải",
-        "seats": 5,
-        "fuel_type": "Dầu",
-        "transmission": "Tự động",
-        "engine_power": "210 mã lực",
-        "features": "Dẫn động 4 bánh, khóa vi sai, cảnh báo lệch làn, kiểm soát đổ đèo",
-        "image_url": "https://media.drive.com.au/obj/tx_q:70,rs:auto:1600:900:1/driveau/upload/cms/uploads/HErmomORtWMsWUXHjGLA",
-        "created_at": "2025-10-25T10:00:00",
-    },
-    {
-        "id": "8",
-        "name": "Mitsubishi Xpander Cross",
-        "brand": "Mitsubishi",
-        "price_min": 700000000,
-        "price_max": 800000000,
-        "segment": "MPV",
-        "seats": 7,
-        "fuel_type": "Xăng",
-        "transmission": "Tự động",
-        "engine_power": "104 mã lực",
-        "features": "Cân bằng điện tử, hỗ trợ khởi hành ngang dốc, đèn LED ban ngày",
-        "image_url": "https://img.autocarindia.com/ExtraImages/20191112043723_xpand2.jpg?w=700&c=1",
-        "created_at": "2025-10-25T10:00:00",
-    },
-    {
-        "id": "9",
-        "name": "Tesla Model 3 Standard Range Plus",
-        "brand": "Tesla",
-        "price_min": 1600000000,
-        "price_max": 1900000000,
-        "segment": "Sedan",
-        "seats": 5,
-        "fuel_type": "Điện",
-        "transmission": "Tự động",
-        "engine_power": "283 mã lực",
-        "features": "Tự lái Autopilot, màn hình 15 inch, không cần chìa khóa vật lý",
-        "image_url": "https://cimg1.ibsrv.net/ibimg/hgm/300x169-1/100/689/2019-tesla-model-3_100689077.jpg",
-        "created_at": "2025-10-25T10:00:00",
-    },
-    {
-        "id": "10",
-        "name": "Toyota Corolla Cross Hybrid",
-        "brand": "Toyota",
-        "price_min": 930000000,
-        "price_max": 1050000000,
-        "segment": "SUV",
-        "seats": 5,
-        "fuel_type": "Hybrid",
-        "transmission": "Tự động",
-        "engine_power": "138 mã lực",
-        "features": "Động cơ hybrid tiết kiệm, ga tự động thích ứng, cảnh báo va chạm",
-        "image_url": "https://images.hgmsites.net/hug/2023-toyota-corolla-cross-hybrid_100880816_h.jpg",
-        "created_at": "2025-10-25T10:00:00",
-    },
-]
 # ---- ADD CAR TO CHROMADB ----
 for car in database_cars:
     var_embedding = f"""name: {car['name']} 
