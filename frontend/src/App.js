@@ -4,9 +4,9 @@ import {
   FiSend,
   FiUser,
   FiTruck,
-  FiSmile,
-  FiFrown,
-  FiServer,
+  FiThumbsUp,
+  FiThumbsDown,
+  FiCopy,
   FiVolume2,
   FiVolumeX
 } from "react-icons/fi";
@@ -62,6 +62,7 @@ const ChatMessages = styled.div`
   flex-direction: column;
   gap: 15px;
   .row-inline-between {
+    opacity: 0.6;
     display: inline-flex;
     align-items: center;
     justify-content: space-between;
@@ -96,6 +97,7 @@ const MessageContent = styled.div`
   color: ${(props) => (props.isUser ? "white" : "#333")};
   word-wrap: break-word;
   line-height: 1.4;
+  ol { margin-left: 30px }
 
   ${(props) =>
     props.isUser
@@ -109,8 +111,6 @@ const MessageContent = styled.div`
 
 const MessageTime = styled.div`
   font-size: 11px;
-  opacity: 0.7;
-  margin-top: 5px;
   text-align: ${(props) => (props.isUser ? "right" : "left")};
 `;
 
@@ -425,7 +425,7 @@ function App() {
     return (
       <Message key={message.id} isUser={isUser}>
         <MessageAvatar isUser={isUser}>
-          {isUser ? <FiUser size={20} /> : <FiServer size={20} />}
+          {isUser ? <FiUser size={20} /> : <FiTruck size={20} />}
         </MessageAvatar>
         <div style={{ maxWidth: "70%" }}>
           <MessageContent isUser={isUser} className="message-content">
@@ -446,16 +446,16 @@ function App() {
           </MessageContent>
           <div
             className="row-inline-between w-100"
-            style={{ width: "100%", marginTop: "20px" }}
+            style={{ width: "100%" }}
           >
             <MessageTime isUser={isUser}>
               {formatTime(message.timestamp)}{" "}
-              {!isUser && message.id > 1 ? (
+              {!isUser && message.id !== 1 ? (
                 <>
                   {" "}
-                  <FiSmile size={18} style={{ marginLeft: "5px" }} />{" "}
-                  <span style={{ marginRight: "5px" }}></span>{" "}
-                  <FiFrown size={18} />
+                  <FiThumbsUp size={18} style={{ marginLeft: "10px", cursor: "pointer" }} />{" "}
+                  <FiThumbsDown size={18} style={{ marginLeft: "7px", cursor: "pointer" }} />
+                  <FiCopy size={18} style={{ marginLeft: "7px", cursor: "pointer" }} />
                 </>
               ) : null}
             </MessageTime>
@@ -463,11 +463,13 @@ function App() {
               (isPlay ? (
                 <FiVolume2
                   size={18}
+                  style={{ cursor: "pointer" }}
                   onClick={() => handlePlayAudio(message?.audioId)}
                 />
               ) : (
                 <FiVolumeX
                   size={18}
+                  style={{ cursor: "pointer" }}
                   onClick={() => handlePlayAudio(message?.audioId)}
                 />
               ))}
@@ -496,7 +498,7 @@ function App() {
           {isLoading && (
             <Message>
               <MessageAvatar>
-                <FiServer size={20} />
+                <FiTruck size={20} />
               </MessageAvatar>
               <MessageContent>
                 <LoadingDots>
