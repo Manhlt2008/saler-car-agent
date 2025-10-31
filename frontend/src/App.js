@@ -25,7 +25,7 @@ const AppContainer = styled.div`
 const ChatContainer = styled.div`
   width: 100%;
   max-width: 800px;
-  height: 80vh;
+  height: 90vh;
   background: white;
   border-radius: 20px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
@@ -236,10 +236,13 @@ const TypewriterEffect = ({
         if (processedText.charAt(visibleLength) === '|') { // skip each row in table
           const nextIdxOf = processedText.indexOf("|\n", visibleLength)
           step = nextIdxOf - visibleLength + 1;
-          scrollChatView();
+        } else if (processedText.charAt(visibleLength) === '(') { // skip image url
+          const nextIdxOf = processedText.indexOf(")", visibleLength) || processedText.indexOf("\n", visibleLength)
+          step = nextIdxOf - visibleLength + 1;
         }
+        if (step < 1) step = 1;
         setVisibleLength(visibleLength + step);
-        if (visibleLength % 100 === 0)
+        if (step > 1 || visibleLength % 100 === 0)
           scrollChatView();
       }, typingSpeed);
       return () => clearTimeout(timer);
