@@ -1,8 +1,6 @@
 import shutil
-import sounddevice as sd
 import torch
 from scipy.io.wavfile import write
-import numpy as np
 import os
 from transformers import VitsModel, AutoTokenizer
 
@@ -18,8 +16,8 @@ if(isMac is False):
 
 os.makedirs(folder, exist_ok=True)
 
-model = VitsModel.from_pretrained("facebook/mms-tts-vie")
-tokenizer = AutoTokenizer.from_pretrained("facebook/mms-tts-vie")
+model = VitsModel.from_pretrained("sonktx/mms-tts-vie-finetuned")
+tokenizer = AutoTokenizer.from_pretrained("sonktx/mms-tts-vie-finetuned")
 
 def empty_audio():
   for filename in os.listdir(folder):

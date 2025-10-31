@@ -251,6 +251,7 @@ function App() {
   const [src, setSrc] = useState(null);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -345,8 +346,8 @@ function App() {
         timestamp: new Date(),
         audioId: response.data.response?.id,
       };
-      response.data.response?.message &&
-        handlePlayAudio(botMessage.audioId, true);
+      // response.data.response?.message &&
+      //   handlePlayAudio(botMessage.audioId, true);
       setMessages((prev) => [...prev, botMessage]);
       console.log("messages", messages);
     } catch (error) {
@@ -389,16 +390,17 @@ function App() {
     });
   };
 
-  const handlePlayAudio = async (id, force) => {
+  const handlePlayAudio = async (id, text, force) => {
     handleOffPlayAudio();
     if (isPlay && !force) {
       return;
     }
     try {
       setPlay(true);
+      setIsLoadingAudio(true);
       const response = await axios.post(
         "/api/getaudio",
-        { id },
+        { id, text },
         { responseType: "arraybuffer" },
       );
       const buf = (await response?.data) || [];
@@ -409,6 +411,9 @@ function App() {
       src.connect(ctx.destination);
       src.start(0);
       setSrc(src);
+      setTimeout(() => {
+        setIsLoadingAudio(false);
+      }, 750);
     } catch (_) {
       //
     }
@@ -455,24 +460,30 @@ function App() {
                   {" "}
                   <FiThumbsUp size={18} style={{ marginLeft: "10px", cursor: "pointer" }} />{" "}
                   <FiThumbsDown size={18} style={{ marginLeft: "7px", cursor: "pointer" }} />
-                  <FiCopy size={18} style={{ marginLeft: "7px", cursor: "pointer" }} />
+                  <FiCopy size={18} style={{ marginLeft: "11px", cursor: "pointer" }} />
                 </>
               ) : null}
             </MessageTime>
             {message.audioId &&
-              (isPlay ? (
-                <FiVolume2
-                  size={18}
-                  style={{ cursor: "pointer" }}
-                  onClick={() => handlePlayAudio(message?.audioId)}
-                />
-              ) : (
-                <FiVolumeX
-                  size={18}
-                  style={{ cursor: "pointer" }}
-                  onClick={() => handlePlayAudio(message?.audioId)}
-                />
-              ))}
+              (isLoadingAudio ?
+                <LoadingDots>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </LoadingDots> :
+                isPlay ? (
+                  <FiVolumeX
+                    size={18}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => handlePlayAudio(message?.audioId, message.text)}
+                  />
+                ) : (
+                  <FiVolume2
+                    size={18}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => handlePlayAudio(message?.audioId, message.text)}
+                  />
+                ))}
           </div>
         </div>
       </Message>

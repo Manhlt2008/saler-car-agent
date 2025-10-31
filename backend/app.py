@@ -21,11 +21,15 @@ def getaudio():
     try:
         data = request.get_json()
         audio_id = data.get('id', '')
+        text = data.get('text', '')
         return send_from_directory(folder, get_file_name_by_id(audio_id), mimetype="audio/wav")
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
+        try:
+            request_audio(text, audio_id)
+            return send_from_directory(folder, get_file_name_by_id(audio_id), mimetype="audio/wav")
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
@@ -38,8 +42,8 @@ def chat():
 
         if isFunctionCall:
             function_call_response = function_call(prompt_message_list)
-            if (function_call_response["response"]):
-                request_audio(function_call_response.response.message, function_call_response.response.message.id)
+            # if (function_call_response["response"]):
+            #     request_audio(function_call_response.response.message, function_call_response.response.message.id)
             return jsonify(function_call_response)
         
         elif isDatabaseQuery:
