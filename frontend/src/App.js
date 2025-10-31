@@ -233,13 +233,13 @@ const TypewriterEffect = ({
     if (visibleLength < processedText.length) {
       const timer = setTimeout(() => {
         let step = 1;
-        if (processedText.charAt(visibleLength) == '|') { // skip each row in table
+        if (processedText.charAt(visibleLength) === '|') { // skip each row in table
           const nextIdxOf = processedText.indexOf("|\n", visibleLength)
           step = nextIdxOf - visibleLength + 1;
           scrollChatView();
         }
         setVisibleLength(visibleLength + step);
-        if (visibleLength % 100 == 0)
+        if (visibleLength % 100 === 0)
           scrollChatView();
       }, typingSpeed);
       return () => clearTimeout(timer);
@@ -247,7 +247,7 @@ const TypewriterEffect = ({
       onRenderingEnd();
       scrollChatView();
     }
-  }, [visibleLength, processedText.length, typingSpeed, onRenderingEnd]);
+  });
   return (
     <div ref={contentRef}>
       <CustomReactMarkdown content={processedText.substring(0, visibleLength)} />
@@ -318,9 +318,8 @@ function App() {
         payLoad.isDatabaseQuery = true;
 
       const indexSimilarCarQuery =
-        lowerInputValue.includes("tìm xe") ||
-        lowerInputValue.includes("tương tự") ||
         lowerInputValue.includes("gợi ý") ||
+        lowerInputValue.includes("tương tự") ||
         lowerInputValue.includes("recommend");
       if (indexSimilarCarQuery)
         payLoad.isSimilarCarQuery = true;

@@ -40,6 +40,8 @@ def chat():
         isDatabaseQuery = data.get("isDatabaseQuery", False)
         isSimilarCarQuery = data.get("isSimilarCarQuery", False)
 
+        prompt_message_list[-1]["content"]+=". Câu trả lời thêm nhiều emoticon sinh động"
+
         if isFunctionCall:
             function_call_response = function_call(prompt_message_list)
             # if (function_call_response["response"]):
