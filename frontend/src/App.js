@@ -502,7 +502,7 @@ function App() {
                 </>
               ) : null}
             </MessageTime>
-            {message.audioId &&
+            {message.audioId && message.text &&
               (isLoadingAudio ?
                 <LoadingDots>
                   <span></span>
