@@ -222,21 +222,58 @@ const QuickActionButton = styled.button`
   }
 `;
 
-// const CarComparison = styled.div`
-//   background: #f8f9fa;
-//   border-radius: 12px;
-//   padding: 15px;
-//   margin: 10px 0;
-//   border-left: 4px solid #667eea;
-// `;
+const TypewriterEffect = ({
+  processedText,
+  typingSpeed = 10,
+  onRenderingEnd,
+}) => {
+  const [visibleLength, setVisibleLength] = useState(0);
+  const contentRef = useRef(null);
+  useEffect(() => {
+    if (visibleLength < processedText.length) {
+      const timer = setTimeout(() => {
+        let step = 1;
+        if (processedText.charAt(visibleLength) == '|') { // skip each row in table
+          const nextIdxOf = processedText.indexOf("|\n", visibleLength)
+          step = nextIdxOf - visibleLength + 1;
+          scrollChatView();
+        }
+        setVisibleLength(visibleLength + step);
+        if (visibleLength % 100 == 0)
+          scrollChatView();
+      }, typingSpeed);
+      return () => clearTimeout(timer);
+    } else if (onRenderingEnd) {
+      onRenderingEnd();
+      scrollChatView();
+    }
+  }, [visibleLength, processedText.length, typingSpeed, onRenderingEnd]);
+  return (
+    <div ref={contentRef}>
+      <CustomReactMarkdown content={processedText.substring(0, visibleLength)} />
+      {visibleLength < processedText.length && <span className="typing-indicator" />}
+    </div>
+  );
+};
 
-// const ShowroomCard = styled.div`
-//   background: #f8f9fa;
-//   border-radius: 12px;
-//   padding: 15px;
-//   margin: 10px 0;
-//   border-left: 4px solid #28a745;
-// `;
+const CustomReactMarkdown = ({ content, className }) => (
+  <Markdown
+    remarkPlugins={[remarkGfm]}
+    components={{
+      // Custom renderers for table elements
+      th: ({ node, ...props }) => <th className="th" {...props} />,
+      td: ({ node, ...props }) => <td className="td" {...props} />,
+      // Add other custom renderers as needed
+    }}
+  >
+    {content}
+  </Markdown>
+);
+
+const scrollChatView = () => {
+  const messagesEndRef = document.getElementById("messagesEndRef");
+  messagesEndRef?.scrollIntoView({ behavior: "smooth" });
+}
 
 function App() {
   const [messages, setMessages] = useState([
@@ -434,9 +471,10 @@ function App() {
         </MessageAvatar>
         <div style={{ maxWidth: "70%" }}>
           <MessageContent isUser={isUser} className="message-content">
-            <Markdown remarkPlugins={[remarkGfm]}>
+            {isUser ? <Markdown remarkPlugins={[remarkGfm]}>
               {message.text}
-            </Markdown>
+            </Markdown> :
+              <TypewriterEffect processedText={message.text} onRenderingEnd={() => { }} />}
             {message.images ? (
               <img
                 src={message.images}
@@ -534,7 +572,7 @@ function App() {
             </QuickActions>
           )}
 
-          <div ref={messagesEndRef} />
+          <div id="messagesEndRef" ref={messagesEndRef} />
         </ChatMessages>
 
         <ChatInput>
