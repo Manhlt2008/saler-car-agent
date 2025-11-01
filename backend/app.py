@@ -9,27 +9,13 @@ from flask_cors import CORS
 from similarCars import callPinecone
 from chromaDBCall import callChromaDB
 from functionCalling import function_call
+from langchainSearch import callTavilySearch
 from flask import Flask, request, jsonify, send_from_directory
 from audio import empty_audio, request_audio, folder, get_file_name_by_id
 
 app = Flask(__name__)
 CORS(app)
 modelName = os.getenv("DEPLOYMENT_NAME")
-
-@app.route('/api/getaudio', methods=['POST'])
-def getaudio():
-    try:
-        data = request.get_json()
-        audio_id = data.get('id', '')
-        text = data.get('text', '')
-        return send_from_directory(folder, get_file_name_by_id(audio_id), mimetype="audio/wav")
-
-    except Exception as e:
-        try:
-            request_audio(text, audio_id)
-            return send_from_directory(folder, get_file_name_by_id(audio_id), mimetype="audio/wav")
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
@@ -39,29 +25,33 @@ def chat():
         isFunctionCall = data.get("isFunctionCall", False)
         isDatabaseQuery = data.get("isDatabaseQuery", False)
         isSimilarCarQuery = data.get("isSimilarCarQuery", False)
+        isLangchainSearch = data.get("isLangchainSearch", False)
 
         prompt_message_list[-1]["content"]+=". Câu trả lời thêm nhiều emoticon sinh động"
 
-        if isFunctionCall:
+        if isLangchainSearch:
+            response = callTavilySearch(prompt_message_list)
+            id = uuid.uuid1()
+            return jsonify({"response": { "message":response, "id":id}})
+
+        elif isFunctionCall:
             function_call_response = function_call(prompt_message_list)
             # if (function_call_response["response"]):
             #     request_audio(function_call_response.response.message, function_call_response.response.message.id)
             return jsonify(function_call_response)
         
         elif isDatabaseQuery:
-            llm_response = callChromaDB(prompt_message_list)
+            response = callChromaDB(prompt_message_list)
             id = uuid.uuid1()
             # request_audio(llm_response, id)
-            return jsonify({"response": { "message":llm_response, "id":id}})
+            return jsonify({"response": { "message":response, "id":id}})
         
         elif isSimilarCarQuery:
-            llm_response = callPinecone(prompt_message_list)
+            response = callPinecone(prompt_message_list)
             id = uuid.uuid1()
             # request_audio(llm_response, id)
-            return jsonify({"response": {
-                "message":llm_response,
-                "id":id
-            }})
+            return jsonify({"response": { "message":response, "id":id}})
+
         # if not message_list:
         #     return jsonify({'error': 'Message is required'}), 400
 
@@ -87,6 +77,21 @@ def chat():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/getaudio', methods=['POST'])
+def getaudio():
+    try:
+        data = request.get_json()
+        audio_id = data.get('id', '')
+        text = data.get('text', '')
+        return send_from_directory(folder, get_file_name_by_id(audio_id), mimetype="audio/wav")
+
+    except Exception as e:
+        try:
+            request_audio(text, audio_id)
+            return send_from_directory(folder, get_file_name_by_id(audio_id), mimetype="audio/wav")
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
 @app.route('/health', methods=['GET'])
 def health():

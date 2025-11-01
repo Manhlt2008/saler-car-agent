@@ -11,6 +11,7 @@ def initKey():
     os.environ["OPENAI_EMBEDDING_MODEL"] = "text-embedding-3-small"
 
     os.environ["PINECONE_API_KEY"] = ""
+    os.environ["TAVILY_API_KEY"] = ""
 
 client = None
 embedding_client = None

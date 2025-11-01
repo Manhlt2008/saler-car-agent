@@ -307,8 +307,8 @@ function App() {
     if (inputValue.length !== 0) {
       const lowerInputValue = inputValue.toLowerCase();
       const indexFindImage =
-        lowerInputValue.includes("ảnh") ||
-        lowerInputValue.includes("hình ảnh") ||
+        lowerInputValue.includes("tìm ảnh") ||
+        lowerInputValue.includes("tìm hình ảnh") ||
         lowerInputValue.includes("image") ||
         lowerInputValue.includes("photo");
       if (indexFindImage)
@@ -326,6 +326,11 @@ function App() {
         lowerInputValue.includes("recommend");
       if (indexSimilarCarQuery)
         payLoad.isSimilarCarQuery = true;
+
+      const indexLangchainSearch =
+        lowerInputValue.includes("tìm kiếm")
+      if (indexLangchainSearch)
+        payLoad.isLangchainSearch = true;
 
       if (lowerInputValue.includes("so sánh"))
         inputValue += " trả lời dưới dạng bảng ví dụ như sau | Header 1 | Header 2 | Header 3 | | :------- | :------: | -------: | | Row 1 Col 1 | Row 1 Col 2 | Row 1 Col 3 | | Row 2 Col 1 | Row 2 Col 2 | Row 2 Col 3 |"
