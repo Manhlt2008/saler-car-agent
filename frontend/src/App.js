@@ -9,12 +9,12 @@ import {
   FiCopy,
   FiVolume2,
   FiVolumeX,
-  FiMic
 } from "react-icons/fi";
 import { RiChatNewLine } from "react-icons/ri";
 import axios from "axios";
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import MIC from "./Mic";
 
 const AppContainer = styled.div`
   display: flex;
@@ -421,11 +421,12 @@ Nếu câu hỏi có cả nội dung ngoài lĩnh vực ô tô, vẫn trả lờ
     payLoad.promptMessageList.unshift(roleSystem);
     return payLoad;
   };
-  const sendMessage = async () => {
-    if (!inputValue.trim() || isLoading) return;
+  const sendMessage = async (text) => {
+    let newMess = (text || inputValue) + "";
+    if (!newMess.trim() || isLoading) return;
     const userMessage = {
       id: Date.now(),
-      text: inputValue,
+      text: newMess,
       isUser: true,
       timestamp: new Date(),
     };
@@ -433,7 +434,7 @@ Nếu câu hỏi có cả nội dung ngoài lĩnh vực ô tô, vẫn trả lờ
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsLoading(true);
-    const payload = setPayloadToSendMessage(inputValue);
+    const payload = setPayloadToSendMessage(newMess);
     try {
       const response = await axios.post("/api/chat", payload);
 
@@ -529,8 +530,22 @@ Nếu câu hỏi có cả nội dung ngoài lĩnh vực ô tô, vẫn trả lờ
   };
 
   const handleMIC = () => {
+    if (!useMic) {
+      setInputValue(_ => "")
+    }
     setMic(pre => !pre);
-    setInputValue("")
+  }
+
+  const handleText = (text) => {
+    setInputValue(_ => text)
+  }
+
+  const forceEnd = (text) => {
+    if (text) {
+      setInputValue(_ => text)
+      sendMessage(text)
+    }
+    setMic(false)
   }
 
   const renderMessage = (message) => {
@@ -653,9 +668,7 @@ Nếu câu hỏi có cả nội dung ngoài lĩnh vực ô tô, vẫn trả lờ
         </ChatMessages>
 
         <ChatInput>
-          <div onClick={handleMIC} className={useMic ? 'MIC active' : 'MIC'} >
-            <FiMic></FiMic>
-          </div>
+          <MIC useMic={useMic} inputValue={inputValue} forceEnd={forceEnd} handleText={handleText} handleMIC={handleMIC}></MIC>
           <InputField
             type="text"
             value={inputValue}
