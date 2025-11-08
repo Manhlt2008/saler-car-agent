@@ -678,7 +678,7 @@ Nếu câu hỏi có cả nội dung ngoài lĩnh vực ô tô, vẫn trả lờ
             disabled={isLoading || useMic}
           />
           {!useMic && <SendButton
-            onClick={sendMessage}
+            onClick={() => sendMessage()}
             disabled={isLoading || !inputValue.trim()}
           >
             <FiSend size={20} />
