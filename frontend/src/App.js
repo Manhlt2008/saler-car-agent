@@ -301,6 +301,21 @@ function App() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      const link = e.target.closest("a");
+      if (link && link.tagName === "A" && link.href) {
+        e.preventDefault();
+        window.open(link.href, "_blank");
+      }
+    };
+
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, []);
+
   const setPayloadToSendMessage = (inputValue) => {
     const payLoad = {};
 
