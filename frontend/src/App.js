@@ -8,8 +8,9 @@ import {
   FiThumbsDown,
   FiCopy,
   FiVolume2,
-  FiVolumeX
+  FiVolumeX,
 } from "react-icons/fi";
+import { RiChatNewLine } from "react-icons/ri";
 import axios from "axios";
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -20,6 +21,14 @@ const AppContainer = styled.div`
   align-items: center;
   min-height: 100vh;
   padding: 20px;
+  position: relative;
+  .new-chat{
+    position: absolute;
+    top: 40px;
+    right: 30px;
+    font-size: 20px;
+    cursor: pointer;
+  } 
 `;
 
 const ChatContainer = styled.div`
@@ -279,14 +288,15 @@ const scrollChatView = () => {
 }
 
 function App() {
-  const [messages, setMessages] = useState([
+  const startMessage = [
     {
       id: 1,
       text: "Xin chào! Tôi là AI agent tư vấn bán xe. Tôi có thể giúp bạn:\n\n• Tìm xe phù hợp với ngân sách và nhu cầu\n\n• So sánh các mẫu xe\n\n• Tìm showroom gần nhất\n\n• Đăng ký lái thử\n\nBạn có thể cho tôi biết ngân sách và yêu cầu của bạn không?",
       isUser: false,
       timestamp: new Date(),
     },
-  ]);
+  ]
+  const [messages, setMessages] = useState([...startMessage]);
   const [isPlay, setPlay] = useState(false);
   const [src, setSrc] = useState(null);
   const [inputValue, setInputValue] = useState("");
@@ -449,6 +459,10 @@ function App() {
     });
   };
 
+  const handleNewChat = async () => {
+    setMessages([...startMessage]);
+  }
+
   const handlePlayAudio = async (id, text, force) => {
     handleOffPlayAudio();
     if (isPlay && !force) {
@@ -554,13 +568,18 @@ function App() {
     <AppContainer>
       <ChatContainer>
         <ChatHeader>
-          <HeaderTitle>
-            <FiTruck style={{ marginRight: "10px", verticalAlign: "middle" }} />
-            AI Car Agent
-          </HeaderTitle>
-          <HeaderSubtitle>
-            Tư vấn mua xe thông minh - Tìm xe phù hợp với bạn
-          </HeaderSubtitle>
+          <div>
+            <HeaderTitle>
+              <FiTruck style={{ marginRight: "10px", verticalAlign: "middle" }} />
+              AI Car Agent
+            </HeaderTitle>
+            <HeaderSubtitle>
+              Tư vấn mua xe thông minh - Tìm xe phù hợp với bạn
+            </HeaderSubtitle>
+          </div>
+          <div className="new-chat">
+            <RiChatNewLine onClick={handleNewChat} />
+          </div>
         </ChatHeader>
 
         <ChatMessages>
