@@ -54,7 +54,7 @@ def function_call(messages):
     except Exception as e:
         return {"error": str(e), 
                 "response": "",
-                "images": "https://vinfastvietnam.net.vn/uploads/data/3097/files/files/vf6/z5399795928209_497b18168c84c3c6bd3d779b53eac21d.jpg"}
+                "images": "https://giaxeotovinfast.net/wp-content/uploads/2023/01/312207264_637940821322100_2347147708676423923_n.jpg"}
 
 def get_car_image(query):
     """Get the first image URL for the given search text using DuckDuckGo."""

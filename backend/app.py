@@ -56,7 +56,7 @@ def chat():
         #     return jsonify({'error': 'Message is required'}), 400
 
         response = client.chat.completions.create(
-            model=modelName, messages=prompt_message_list,max_completion_tokens=500
+            model=modelName, messages=prompt_message_list
         )
 
         assistant_message = response.choices[0].message.content

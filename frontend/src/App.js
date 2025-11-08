@@ -239,6 +239,7 @@ const TypewriterEffect = ({
   processedText,
   typingSpeed = 10,
   onRenderingEnd,
+  textStep = 0
 }) => {
   const [visibleLength, setVisibleLength] = useState(0);
   const contentRef = useRef(null);
@@ -254,6 +255,7 @@ const TypewriterEffect = ({
           step = nextIdxOf - visibleLength + 1;
         }
         if (step < 1) step = 1;
+        if (textStep) step = textStep;
         setVisibleLength(visibleLength + step);
         if (step > 1 || visibleLength % 100 === 0)
           scrollChatView();
@@ -387,8 +389,17 @@ function App() {
     const roleSystem = {
       role: "system",
       content: `Bạn là một chuyên gia sale trong lĩnh vực mua bán xe hơi tại thị trường Việt Nam.
-        Nếu như câu hỏi là những thứ ngoài lĩnh vực này thì hãy trả lời là:
-        Xin lỗi bạn đây là câu hỏi nằm ngoài lĩnh vực của tôi. Xin hãy đặt lại câu hỏi.`,
+Nhiệm vụ của bạn là hỗ trợ, tư vấn và giải đáp các thắc mắc liên quan trực tiếp đến việc mua bán, lựa chọn, sử dụng, đánh giá, tài chính, bảo hiểm, thủ tục pháp lý, dịch vụ hậu mãi và các vấn đề kỹ thuật của xe hơi tại Việt Nam.
+Bạn cũng có thể hỗ trợ cung cấp thông tin liên hệ công khai (như số điện thoại, địa chỉ, website...) của các đại lý, showroom, trung tâm dịch vụ xe ô tô tại Việt Nam nếu người dùng yêu cầu, miễn đó là thông tin hợp lệ, công khai và không vi phạm quyền riêng tư.
+Bạn cũng có thể hỗ trợ người dùng tìm kiếm, giới thiệu và cung cấp hình ảnh minh họa (nếu có) về các mẫu xe hơi, các bộ phận, phụ kiện, hoặc các dịch vụ liên quan đến xe ô tô tại thị trường Việt Nam.
+Nếu người dùng đưa ra bất kỳ câu hỏi, yêu cầu hoặc thông tin nào không hoàn toàn nằm trong phạm vi lĩnh vực mua bán xe hơi và các vấn đề liên quan trực tiếp đến xe hơi, bạn phải trả lời: "Xin lỗi bạn đây là câu hỏi nằm ngoài lĩnh vực của tôi. Xin hãy đặt lại câu hỏi."
+Nếu người dùng đặt câu hỏi hoặc câu nói quá chung chung, không rõ ràng nhưng có thể liên quan đến ô tô hoặc lĩnh vực kinh doanh xe hơi (ví dụ: chỉ nói về "bánh xe", "hợp đồng", "giấy tờ", v.v...), bạn hãy trả lời bằng cách:
+-Gợi ý cho người dùng về các chủ đề xoay quanh lĩnh vực ô tô và kinh doanh xe hơi liên quan đến từ khóa họ vừa đề cập.
+-Đặt câu hỏi ngược lại để người dùng làm rõ hơn ý của họ hoặc mong muốn nhận được thông tin gì về chủ đề đó trong lĩnh vực mua bán xe ô tô.
+Ví dụ: Nếu người dùng chỉ nói "bánh xe", bạn có thể trả lời: "Bạn muốn hỏi về việc lựa chọn bánh xe phù hợp cho xe ô tô, cách bảo dưỡng bánh xe, hay chi phí thay bánh xe khi mua bán? Xin hãy nói rõ hơn để tôi hỗ trợ bạn tốt nhất."
+Nếu người dùng chỉ nói "hợp đồng", bạn có thể trả lời: "Bạn đang quan tâm đến hợp đồng mua bán xe ô tô, hợp đồng bảo hiểm, hay thủ tục pháp lý khi ký hợp đồng xe hơi? Bạn có thể nói rõ hơn để tôi tư vấn chi tiết hơn cho bạn."
+Luôn giữ vai trò là chuyên gia sale xe ô tô, chỉ tập trung vào các nội dung liên quan trực tiếp đến lĩnh vực này.
+Nếu câu hỏi có cả nội dung ngoài lĩnh vực ô tô, vẫn trả lời từ chối như trên.`,
     };
     // lastFewMessages.unshift(roleSystem);
     payLoad.promptMessageList = lastFewMessages.slice(-10);
@@ -421,7 +432,7 @@ function App() {
       };
       // response.data.response?.message &&
       //   handlePlayAudio(botMessage.audioId, true);
-      setMessages((prev) => [...prev, botMessage]);
+      setMessages((prev) => [...prev.slice(-10), botMessage]);
       console.log("messages", messages);
     } catch (error) {
       console.error("Error sending message:", error);
@@ -447,6 +458,7 @@ function App() {
   const quickActions = [
     "Tôi muốn mua xe dưới 1 tỷ",
     "Tôi cần xe 7 chỗ",
+    "Tôi cần xe 5 chỗ, gầm cao",
     "Tôi muốn xe SUV",
     "Tôi cần xe tiết kiệm nhiên liệu",
     "Tôi muốn tìm ảnh chi tiết về xe ",
@@ -514,7 +526,7 @@ function App() {
             {isUser ? <Markdown remarkPlugins={[remarkGfm]}>
               {message.text}
             </Markdown> :
-              <TypewriterEffect processedText={message.text} onRenderingEnd={() => { }} />}
+              <TypewriterEffect processedText={message.text} textStep={messages[messages.length - 1].isUser ? 200 : 0} onRenderingEnd={() => { }} />}
             {message.images ? (
               <img
                 src={message.images}
