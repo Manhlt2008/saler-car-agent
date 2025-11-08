@@ -27,7 +27,7 @@ def chat():
         isSimilarCarQuery = data.get("isSimilarCarQuery", False)
         isLangchainSearch = data.get("isLangchainSearch", False)
 
-        prompt_message_list[-1]["content"]+=". Câu trả lời thêm nhiều emoticon sinh động"
+        # prompt_message_list[-1]["content"]+=". Câu trả lời thêm nhiều emoticon sinh động"
 
         if isLangchainSearch:
             response = callTavilySearch(prompt_message_list)

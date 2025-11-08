@@ -9,6 +9,7 @@ import {
   FiCopy,
   FiVolume2,
   FiVolumeX,
+  FiMic
 } from "react-icons/fi";
 import { RiChatNewLine } from "react-icons/ri";
 import axios from "axios";
@@ -23,11 +24,24 @@ const AppContainer = styled.div`
   position: relative;
   .new-chat{
     position: absolute;
-    top: 40px;
+    top: 24px;
     right: 30px;
     font-size: 20px;
     cursor: pointer;
-  } 
+  }
+  .MIC{
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: #ccc;
+    border-radius: 50%;
+    &.active {
+      background: #64f897;
+    }
+  }
 `;
 
 const ChatContainer = styled.div`
@@ -309,6 +323,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const messagesEndRef = useRef(null);
+  const [useMic, setMic] = useState(false)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -399,7 +414,7 @@ Nếu người dùng đặt câu hỏi hoặc câu nói quá chung chung, không
 Ví dụ: Nếu người dùng chỉ nói "bánh xe", bạn có thể trả lời: "Bạn muốn hỏi về việc lựa chọn bánh xe phù hợp cho xe ô tô, cách bảo dưỡng bánh xe, hay chi phí thay bánh xe khi mua bán? Xin hãy nói rõ hơn để tôi hỗ trợ bạn tốt nhất."
 Nếu người dùng chỉ nói "hợp đồng", bạn có thể trả lời: "Bạn đang quan tâm đến hợp đồng mua bán xe ô tô, hợp đồng bảo hiểm, hay thủ tục pháp lý khi ký hợp đồng xe hơi? Bạn có thể nói rõ hơn để tôi tư vấn chi tiết hơn cho bạn."
 Luôn giữ vai trò là chuyên gia sale xe ô tô, chỉ tập trung vào các nội dung liên quan trực tiếp đến lĩnh vực này.
-Nếu câu hỏi có cả nội dung ngoài lĩnh vực ô tô, vẫn trả lời từ chối như trên.`,
+Nếu câu hỏi có cả nội dung ngoài lĩnh vực ô tô, vẫn trả lời từ chối như trên. Câu trả lời thêm nhiều emoticon sinh động`,
     };
     // lastFewMessages.unshift(roleSystem);
     payLoad.promptMessageList = lastFewMessages.slice(-10);
@@ -512,6 +527,11 @@ Nếu câu hỏi có cả nội dung ngoài lĩnh vực ô tô, vẫn trả lờ
     src?.stop?.();
     setPlay(false);
   };
+
+  const handleMIC = () => {
+    setMic(pre => !pre);
+    setInputValue("")
+  }
 
   const renderMessage = (message) => {
     const isUser = message.isUser;
@@ -633,20 +653,23 @@ Nếu câu hỏi có cả nội dung ngoài lĩnh vực ô tô, vẫn trả lờ
         </ChatMessages>
 
         <ChatInput>
+          <div onClick={handleMIC} className={useMic ? 'MIC active' : 'MIC'} >
+            <FiMic></FiMic>
+          </div>
           <InputField
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Nhập tin nhắn của bạn..."
-            disabled={isLoading}
+            placeholder={useMic ? "Hãy hỏi bất cứ câu hỏi nào về xe ..." : "Nhập tin nhắn của bạn..."}
+            disabled={isLoading || useMic}
           />
-          <SendButton
+          {!useMic && <SendButton
             onClick={sendMessage}
             disabled={isLoading || !inputValue.trim()}
           >
             <FiSend size={20} />
-          </SendButton>
+          </SendButton>}
         </ChatInput>
       </ChatContainer>
       <audio
@@ -654,7 +677,7 @@ Nếu câu hỏi có cả nội dung ngoài lĩnh vực ô tô, vẫn trả lờ
         id="player"
         controls
       ></audio>
-    </AppContainer>
+    </AppContainer >
   );
 }
 
