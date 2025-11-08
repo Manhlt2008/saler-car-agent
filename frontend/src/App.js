@@ -20,7 +20,6 @@ const AppContainer = styled.div`
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 20px;
   position: relative;
   .new-chat{
     position: absolute;
@@ -34,6 +33,8 @@ const AppContainer = styled.div`
 const ChatContainer = styled.div`
   width: 100%;
   max-width: 800px;
+  min-height: 600px;
+  margin: auto auto;
   height: 90vh;
   background: white;
   border-radius: 20px;
@@ -41,6 +42,9 @@ const ChatContainer = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  @media (max-width: 600px) {
+  border-radius: 0px;
+  }
 `;
 
 const ChatHeader = styled.div`
@@ -566,7 +570,7 @@ function App() {
 
   return (
     <AppContainer>
-      <ChatContainer>
+      <ChatContainer className="ChatContainer">
         <ChatHeader>
           <div>
             <HeaderTitle>
