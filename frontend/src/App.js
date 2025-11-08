@@ -9,6 +9,7 @@ import {
   FiCopy,
   FiVolume2,
   FiVolumeX,
+  FiMic
 } from "react-icons/fi";
 import { RiChatNewLine } from "react-icons/ri";
 import axios from "axios";
@@ -23,11 +24,24 @@ const AppContainer = styled.div`
   position: relative;
   .new-chat{
     position: absolute;
-    top: 40px;
+    top: 24px;
     right: 30px;
     font-size: 20px;
     cursor: pointer;
-  } 
+  }
+  .MIC{
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: #ccc;
+    border-radius: 50%;
+    &.active {
+      background: #64f897;
+    }
+  }
 `;
 
 const ChatContainer = styled.div`
@@ -307,6 +321,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const messagesEndRef = useRef(null);
+  const [useMic, setMic] = useState(false)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -501,6 +516,11 @@ function App() {
     setPlay(false);
   };
 
+  const handleMIC = () => {
+    setMic(pre => !pre);
+    setInputValue("")
+  }
+
   const renderMessage = (message) => {
     const isUser = message.isUser;
 
@@ -621,20 +641,23 @@ function App() {
         </ChatMessages>
 
         <ChatInput>
+          <div onClick={handleMIC} className={useMic ? 'MIC active' : 'MIC'} >
+            <FiMic></FiMic>
+          </div>
           <InputField
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Nhập tin nhắn của bạn..."
-            disabled={isLoading}
+            placeholder={useMic ? "Hãy hỏi bất cứ câu hỏi nào về xe ..." : "Nhập tin nhắn của bạn..."}
+            disabled={isLoading || useMic}
           />
-          <SendButton
+          {!useMic && <SendButton
             onClick={sendMessage}
             disabled={isLoading || !inputValue.trim()}
           >
             <FiSend size={20} />
-          </SendButton>
+          </SendButton>}
         </ChatInput>
       </ChatContainer>
       <audio
@@ -642,7 +665,7 @@ function App() {
         id="player"
         controls
       ></audio>
-    </AppContainer>
+    </AppContainer >
   );
 }
 
